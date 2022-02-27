@@ -113,12 +113,13 @@ success, or outputs error message on failure."
 Nil arguments are ignored.  Returns the output on success, or
 outputs error message on failure."
   (let ((output nil)
-        (slept-for 0))
-    (apply #'password-store--run-1 (lambda (password)
-                                     (setq output password))
-           (delq nil args))
-    (while (not output)
-      (sleep-for .1))
+        (slept-for 0)
+        (process (apply #'password-store--run-1
+                        (lambda (password)
+                          (setq output password))
+                        (delq nil args))))
+    ;; wait for output or process termination (max. wait time: 5s)
+    (while (accept-process-output process 5.0))
     output))
 
 (defun password-store--run-async (&rest args)
